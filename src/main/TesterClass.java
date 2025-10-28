@@ -710,7 +710,7 @@ public class TesterClass {
                     }
                     else {
                         System.out.println("DATABASE ERROR. NO ACCOUNT WITH ID " + u_id);
-                        System.out.print(ANSI_YELLOW + "Press ENTER to continue . . ." +ANSI_RESET);
+                        System.out.print("Press any key to continue . . .");
                         scan.nextLine();
                         scan.nextLine();
                         return;
@@ -753,7 +753,7 @@ public class TesterClass {
                         else {
                             System.out.println(ANSI_RED + "INVALID OPTION" + ANSI_RESET);
                         }
-                        
+                        while(true){
                         System.out.println("1. View careplans");
                         System.out.println("2. Create new careplans");
                         System.out.println("3. Drop patient");     
@@ -781,6 +781,9 @@ public class TesterClass {
                                                 Map<String, Object> sel = select.get(0);
                                                 c_id = (int) sel.get("c_id");
                                                 edit_careplan(c_id, u_id);
+                                                System.out.print("Press any key to continue . . .");
+                                                scan.nextLine();
+                                                scan.nextLine();
                                             }
                                             break;//end of case 1 edit careplan
                                         case 2:
@@ -792,17 +795,41 @@ public class TesterClass {
                                             sqlUpd = "UPDATE careplan SET status = ? WHERE c_id = ?";
                                             config.updateRecord(sqlUpd, "archived", c_id);    
                                             }
+                                            System.out.println("Careplan sucessfully archived!");
+                                            System.out.print("Press any key to continue . . .");
+                                            scan.nextLine();
+                                            scan.nextLine();
                                             break;//end of case 2 end careplan
                                         case 3:
+                                            while(true){
                                             view_tasks(c_id, u_id); 
                                             System.out.println("\n============================================");
                                             System.out.println("1. Add new task");
                                             System.out.println("2. Add new medicine");
-                                            System.out.println("3. Edit task");
+                                            System.out.println("3. Edit task/medicine");
                                             System.out.println("4. Delete Task");
+                                            System.out.println("5. Exit");
+                                            System.out.print(ANSI_YELLOW + "Enter [#]: " + ANSI_RESET);
+                                            choice = scan.nextInt();
                                             
-                                            
+                                            switch(choice){
+                                                case 1:
+                                                    add_task(c_id);
+                                                    break;//end of case 1 add new tasks
+                                                case 2:
+                                                    add_medicine();
+                                                    break;//end of case 2 add new medicine
+                                                case 3:
+                                                    edit_task/medicine(c_id);
+                                                    break;//end of case 3 edit task or medicine
+                                                case 4:
+                                                    delete_task();
+                                                    break;//end of case 4 delete task or medicine
+                                                case 5:
+                                                    break;//exit
+                                            }
                                             break;//end of case 3 view tasks
+                                             }
                                         case 4:
                                             break;//end of case 4 exit
                                             
@@ -833,8 +860,9 @@ public class TesterClass {
                                 case 4:
                                     break;    
                             }//end inner case
-
+                            
                         break; //end of case 1 select patients
+                        }
                     case 2:
                         approve_message(u_id);
                         System.out.print("Press any key to continue . . .");
