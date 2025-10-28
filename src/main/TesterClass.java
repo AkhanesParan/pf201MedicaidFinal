@@ -81,80 +81,73 @@ public class TesterClass {
                     }   //end off main function
 
 //LOGIN AND REGISTER            
-            public static void login (){
-                
-                while(true){
-    //ENTER CREDENTIALS                
-                    System.out.println(ANSI_BLUE + "===== LOG IN =====\n" + ANSI_RESET);
-                    System.out.print(ANSI_YELLOW + "Email: " + ANSI_RESET);
-                    email = scan.next();
-                    System.out.print(ANSI_YELLOW + "Password: " + ANSI_RESET);
-                    password = scan.next();
-                    System.out.println("============================================");
-    //CHECK IF ACCOUNT EXISTS
-                        sqlFetch = "SELECT * FROM users WHERE email = ? AND password = ?";
-                        List<Map<String, Object>> result = config.fetchRecords(sqlFetch, email, password);
-        //ACCOUNT DOESNT EXIST                
-                        if (result.isEmpty()) {
-                            System.out.println(ANSI_RED + "INVALID CREDENTIALS" + ANSI_RESET);
-                            System.out.print(ANSI_YELLOW + "Press ENTER to continue . . ." +ANSI_RESET);
-                            scan.nextLine();
-                            scan.nextLine();
-                            return;
-                        } 
-        //ACCOUNT EXISTS                
-                        else{
-                            Map<String, Object> user = result.get(0);
-                            status = user.get("status").toString();
-                            role = user.get("role").toString();
-                            u_id = user.get("u_id").toString();
-                //ACCOUNT NEEDS APPROVAL            
-                            if (status.equalsIgnoreCase("pending")) {
-                                    System.out.println(ANSI_RED + "ACCOUNT PENDING. CONTACT ADMIN FOR APPROVAL!" + ANSI_RESET);
-                                    System.out.print(ANSI_YELLOW + "Press ENTER to continue . . ." +ANSI_RESET);
-                                    scan.nextLine();
-                                    scan.nextLine();
-                                    email = "";
-                                    password = "";
-                                    status = "";
-                                    role = "";
-                                    return;
-                                    }
-                            else if (status.equalsIgnoreCase("archived")) {
-                                    System.out.println(ANSI_RED + "ACCOUNT DEACTIVATED. CONTACT ADMIN FOR REACTIVATION!" + ANSI_RESET);
-                                    System.out.print(ANSI_YELLOW + "Press ENTER to continue . . ." +ANSI_RESET);
-                                    scan.nextLine();
-                                    scan.nextLine();
-                                    email = "";
-                                    password = "";
-                                    status = "";
-                                    role = "";
-                                    return;
-                                    }
-                            else {
-                                System.out.println("LOGIN SUCCESS!");
-                                System.out.print(ANSI_YELLOW + "Press ENTER to continue . . ." +ANSI_RESET);
-                                scan.nextLine();
-                                scan.nextLine();
-                                
-                                switch (role) {
-                                        case "patient":
-                                            patient(u_id);
-                                            break; // end of case patient
-                                        case "caretaker":
-                                            caretaker(u_id);
-                                            break; // end of case caretaker
-                                        case "admin":
-                                            
-                                            break; // end of case admin
-                                        case "superadmin":
-                                            
-                                            break; // end of case superadmin
-                                }
-                            }
-                        }                         
-                }
-            }   //end off login
+            public static void login() {
+    while (true) {
+        // ENTER CREDENTIALS
+        System.out.println(ANSI_BLUE + "\n===== LOG IN =====\n" + ANSI_RESET);
+        System.out.print(ANSI_YELLOW + "Email: " + ANSI_RESET);
+        email = scan.next();
+        System.out.print(ANSI_YELLOW + "Password: " + ANSI_RESET);
+        password = scan.next();
+        System.out.println("============================================");
+
+        // CHECK IF ACCOUNT EXISTS
+        String hashed = config.hashPassword(password);
+        sqlFetch = "SELECT * FROM users WHERE email = ? AND password = ?";
+        List<Map<String, Object>> result = config.fetchRecords(sqlFetch, email, hashed);
+
+        // ACCOUNT DOESN'T EXIST
+        if (result.isEmpty()) {
+            System.out.println(ANSI_RED + "INVALID CREDENTIALS" + ANSI_RESET);
+            System.out.print(ANSI_YELLOW + "Press ENTER to continue . . ." + ANSI_RESET);
+            scan.nextLine(); // Consume the newline
+            scan.nextLine(); // Wait for user input
+            continue; // Retry login
+        } 
+
+        // ACCOUNT EXISTS
+        Map<String, Object> user = result.get(0);
+        status = user.get("status").toString();
+        role = user.get("role").toString();
+        u_id = user.get("u_id").toString();
+
+        // ACCOUNT NEEDS APPROVAL
+        if (status.equalsIgnoreCase("pending")) {
+            System.out.println(ANSI_RED + "ACCOUNT PENDING. CONTACT ADMIN FOR APPROVAL!" + ANSI_RESET);
+            System.out.print(ANSI_YELLOW + "Press ENTER to continue . . ." + ANSI_RESET);
+            scan.nextLine();
+            scan.nextLine();
+            continue; // Retry login
+        } else if (status.equalsIgnoreCase("archived")) {
+            System.out.println(ANSI_RED + "ACCOUNT DEACTIVATED. CONTACT ADMIN FOR REACTIVATION!" + ANSI_RESET);
+            System.out.print(ANSI_YELLOW + "Press ENTER to continue . . ." + ANSI_RESET);
+            scan.nextLine();
+            scan.nextLine();
+            continue; // Retry login
+        } else {
+            System.out.println("LOGIN SUCCESS!");
+            System.out.print(ANSI_YELLOW + "Press ENTER to continue . . ." + ANSI_RESET);
+            scan.nextLine();
+            scan.nextLine();
+
+            switch (role) {
+                case "Patient":
+                    patient(u_id);
+                    break; // end of case patient
+                case "Caretaker":
+                    caretaker(u_id);
+                    break; // end of case caretaker
+                case "Admin":
+                    // Handle admin functionality
+                    break; // end of case admin
+                case "Superadmin":
+                    // Handle superadmin functionality
+                    break; // end of case superadmin
+            }
+        }
+    }
+}
+
             
             public static void register (){
                 System.out.println(ANSI_BLUE + "===== REGISTER =====\n" + ANSI_RESET);
@@ -197,10 +190,11 @@ public class TesterClass {
                 System.out.print(ANSI_YELLOW + "Password: " + ANSI_RESET);
                     password = scan.next();
                     
-                 String part1 = "INSERT INTO users (u_fname, u_lname, email, password, role, status, birthday, credentials) ";
+                String hashed = config.hashPassword(password);    
+                String part1 = "INSERT INTO users (u_fname, u_lname, email, password, role, status, birthday, credentials) ";
                 String part2 = "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
                 sqlAdd = part1 + part2;
-                config.addRecord(sqlAdd, fname, lname, email, password, role, "pending", birthday, "-");
+                config.addRecord(sqlAdd, fname, lname, email, hashed, role, "pending", birthday, "-");
                 
                 System.out.println("REGISTRATION SUCCESS. ACCOUNT PENDING");
                 System.out.print(ANSI_YELLOW + "Press ENTER to continue . . ." +ANSI_RESET);
@@ -211,7 +205,6 @@ public class TesterClass {
 //PATIENT DASHBOARD
             public static void patient (String u_id){
                 System.out.println(ANSI_BLUE + "===== PATIENT DASHBOARD =====" + ANSI_RESET);
-                
     // FETCH METHOD 
                 sqlFetch = "SELECT * FROM users WHERE u_id = ?";
                 java.util.List<java.util.Map<String, Object>> information = config.fetchRecords(sqlFetch, u_id);
@@ -264,6 +257,7 @@ public class TesterClass {
                 String patient_fullname = fname + " " + lname;    
                 String care_fullname = care_fname + " " + care_lname;
     // DISPLAY ACCOUNT INFORMATION
+    
                 System.out.println("Full Name: " + patient_fullname);
                 System.out.println("Birthdate: " + birthday);
                 System.out.println("Email: " + email);
@@ -288,6 +282,12 @@ public class TesterClass {
                         System.out.print(ANSI_YELLOW + "Enter Careplan [#]: " + ANSI_RESET);
                         choice = scan.nextInt();
                         c_id = Select_careplan(choice);
+                        
+                        System.out.println("Task functions still unfinished");
+                        System.out.print(ANSI_GREEN + "press any key to continue . . ." + ANSI_RESET);
+                                scan.nextLine();
+                                scan.nextLine();
+                        
                        break; //end of case 1 select careplan
                     case 2:
                         System.out.println("1. Request new caretaker");
@@ -330,7 +330,7 @@ public class TesterClass {
                         login();
                         break; //end of case 5 exit dashboard
                 }
-            
+           
             
             }   //end off patient dashboard         
             
@@ -804,11 +804,10 @@ public class TesterClass {
                                             while(true){
                                             view_tasks(c_id, u_id); 
                                             System.out.println("\n============================================");
-                                            System.out.println("1. Add new task");
-                                            System.out.println("2. Add new medicine");
-                                            System.out.println("3. Edit task/medicine");
-                                            System.out.println("4. Delete Task");
-                                            System.out.println("5. Exit");
+                                            System.out.println("1. Add new task or medicine");
+                                            System.out.println("2. Edit task or medicine");
+                                            System.out.println("3. Delete Task");
+                                            System.out.println("4. Exit");
                                             System.out.print(ANSI_YELLOW + "Enter [#]: " + ANSI_RESET);
                                             choice = scan.nextInt();
                                             
@@ -817,20 +816,19 @@ public class TesterClass {
                                                     add_task(c_id);
                                                     break;//end of case 1 add new tasks
                                                 case 2:
-                                                    add_medicine();
-                                                    break;//end of case 2 add new medicine
-                                                case 3:
-                                                    edit_task/medicine(c_id);
+                                                    edit_task(patient_id, u_id, c_id);
+                                                    //edit_task/medicine(c_id);
                                                     break;//end of case 3 edit task or medicine
-                                                case 4:
-                                                    delete_task();
+                                                case 3:
+                                                    //delete_task();
                                                     break;//end of case 4 delete task or medicine
-                                                case 5:
+                                                case 4:
                                                     break;//exit
                                             }
                                             break;//end of case 3 view tasks
                                              }
                                         case 4:
+                                            
                                             break;//end of case 4 exit
                                             
                                             
@@ -1093,7 +1091,82 @@ public class TesterClass {
                         System.out.println("no tasks found");
                     }    
             }//end of view tasks
-            
+//ADD TASKS
+            public static void add_task(int c_id){
+                System.out.println("1. Add task");
+                System.out.println("2. Add Mecicine");
+                System.out.println("3. Exit");
+                System.out.print(ANSI_YELLOW + "Enter [#]: " + ANSI_RESET);
+                choice = scan.nextInt();
+                System.out.println("============================================");
+                
+                if(choice == 1){
+                    System.out.print("Enter Title: ");
+                    String type = scan.next();
+                    System.out.print("Enter Description: ");
+                    String desc = scan.next();
+                    System.out.print("Enter Time (start - end): ");
+                    String time = scan.next();    
+                    
+                    String part1 = "INSERT INTO tasks (c_id, t_type, t_desc, t_time, t_status) ";
+                    String part2 = "VALUES (?, ?, ?, ?, ?)";
+                    sqlAdd = part1 + part2;
+                    config.addRecord(sqlAdd, c_id, type,desc, time, "pending");
+                    System.out.println("Task added successfully!");
+                    System.out.print("Press any key to continue . . .");
+                    scan.nextLine();
+                    scan.nextLine();
+                }
+                else if(choice == 2){
+                    System.out.print("Enter Name: ");
+                    String name = scan.next();
+                    System.out.print("Enter Frequency (# times a day/week): ");
+                    String freq = scan.next();
+                    System.out.print("Enter Further Instruction: ");
+                    String inst = scan.next();
+                    System.out.println("Enter use for medicine: ");
+                    String forwhat = scan.next();  
+                    
+                    String part1 = "INSERT INTO tasks (m_name, m_frequency, m_instruct, m_for, c_id) ";
+                    String part2 = "VALUES (?, ?, ?, ?, ?)";
+                    sqlAdd = part1 + part2;
+                    config.addRecord(sqlAdd, name, freq, inst, forwhat, c_id);
+                    System.out.println("Medicine added successfully!");
+                    System.out.print("Press any key to continue . . .");
+                    scan.nextLine();
+                    scan.nextLine();
+                }
+                else if(choice == 3){
+                    return;
+                }
+            }// end of add_task
+//EDIT TASKS
+            public static void edit_task(int patient_id, String u_id, int c_id){
+                while(true){
+                    
+                
+                    System.out.println("1. Edit task");
+                    System.out.println("2. Edit medicine");
+                    System.out.println("3. Exit");
+                    System.out.print(ANSI_YELLOW + "Enter [#]: " + ANSI_RESET);
+                    choice = scan.nextInt();
+                    System.out.println("============================================");
+                    switch(choice){
+                        case 1:
+                            view_tasks (c_id, u_id);
+                            
+                            break;
+                        case 2:
+                            break;
+                        case 3:
+                            break;
+                        default:
+                            break;
+
+                    }
+                }    
+                
+            }//end of edit task
 //ADMIN DASHBOARD     TEMPORARY
             public static void admin (String u_id){
                 System.out.println("ACCOUNT INFO HERE");
