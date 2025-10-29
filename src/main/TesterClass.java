@@ -204,7 +204,16 @@ public class TesterClass {
             
 //PATIENT DASHBOARD
             public static void patient (String u_id){
+                while(true){
                 System.out.println(ANSI_BLUE + "===== PATIENT DASHBOARD =====" + ANSI_RESET);
+                
+    //ADD THE TEMPOARY CONNECTION
+                sqlFetch = "SELECT * FROM users WHERE u_id = ?";
+                java.util.List<java.util.Map<String, Object>> tempo = config.fetchRecords(sqlFetch, u_id);         
+                    if (!tempo.isEmpty()){
+                        sqlAdd = "INSERT INTO p_to_c_connect (patient_id, care_id, messages) VALUES (?, ?, ?)";
+                        config.addRecord(sqlAdd, u_id, "-", "-");
+                    }                                    
     // FETCH METHOD 
                 sqlFetch = "SELECT * FROM users WHERE u_id = ?";
                 java.util.List<java.util.Map<String, Object>> information = config.fetchRecords(sqlFetch, u_id);
@@ -217,14 +226,14 @@ public class TesterClass {
                         email = info.get("email").toString();  
                     }
                     else {
-                        System.out.println("DATABASE ERROR. NO ACCOUNT WITH ID " + u_id);
+                        System.out.println("DATABASE ERROR IN INFO. NO ACCOUNT WITH ID " + u_id);
                         System.out.print(ANSI_YELLOW + "Press ENTER to continue . . ." +ANSI_RESET);
                         scan.nextLine();
                         scan.nextLine();
                         return;
                     }
                 String sqlFetch1 = "SELECT * FROM p_to_c_connect WHERE patient_id = ?";
-                java.util.List<java.util.Map<String, Object>> connection = config.fetchRecords(sqlFetch1, u_id);
+                List<Map<String, Object>> connection = config.fetchRecords(sqlFetch1, u_id);
                 
                     if (!connection.isEmpty()) {
                         java.util.Map<String, Object> connect = connection.get(0);
@@ -239,7 +248,7 @@ public class TesterClass {
                             care_lname = care.get("u_lname").toString();
                         }
                         else {
-                            System.out.println("DATABASE ERROR. NO ACCOUNT WITH ID " + u_id);
+                            System.out.println("DATABASE ERROR IN NAMES. NO ACCOUNT WITH ID " + u_id);
                             System.out.print(ANSI_YELLOW + "Press ENTER to continue . . ." +ANSI_RESET);
                             scan.nextLine();
                             scan.nextLine();
@@ -247,7 +256,7 @@ public class TesterClass {
                         }
                     }
                     else {
-                        System.out.println("DATABASE ERROR. NO ACCOUNT WITH ID " + u_id);
+                        System.out.println("DATABASE ERROR IN CONNECTION. NO ACCOUNT WITH ID " + u_id);
                         System.out.print(ANSI_YELLOW + "Press ENTER to continue . . ." +ANSI_RESET);
                         scan.nextLine();
                         scan.nextLine();
@@ -330,8 +339,7 @@ public class TesterClass {
                         login();
                         break; //end of case 5 exit dashboard
                 }
-           
-            
+                }
             }   //end off patient dashboard         
             
             
