@@ -210,7 +210,7 @@ public class TesterClass {
     //ADD THE TEMPOARY CONNECTION
                 sqlFetch = "SELECT * FROM users WHERE u_id = ?";
                 java.util.List<java.util.Map<String, Object>> tempo = config.fetchRecords(sqlFetch, u_id);         
-                    if (!tempo.isEmpty()){
+                    if (tempo.isEmpty()){
                         sqlAdd = "INSERT INTO p_to_c_connect (patient_id, care_id, messages) VALUES (?, ?, ?)";
                         config.addRecord(sqlAdd, u_id, "-", "-");
                     }                                    
@@ -232,6 +232,7 @@ public class TesterClass {
                         scan.nextLine();
                         return;
                     }
+    //FIND THE CARETAKER                
                 String sqlFetch1 = "SELECT * FROM p_to_c_connect WHERE patient_id = ?";
                 List<Map<String, Object>> connection = config.fetchRecords(sqlFetch1, u_id);
                 
@@ -243,6 +244,11 @@ public class TesterClass {
                         java.util.List<java.util.Map<String, Object>> caregiver = config.fetchRecords(sqlFetch2, care_id);
                         
                         if (!caregiver.isEmpty()){
+                                //IF THERE IS NO CARETAKER YET
+                                if (caregiver.equals("-")){
+                                    String care_fullname = "-";
+                                }
+                                //CARETAKER CONNECTED
                             java.util.Map<String, Object> care = caregiver.get(0);
                             care_fname = care.get("u_fname").toString(); 
                             care_lname = care.get("u_lname").toString();
