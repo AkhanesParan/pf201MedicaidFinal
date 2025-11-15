@@ -22,7 +22,7 @@ import config.Config;
 
 public class AdminModule {
 
-    public static Scanner scan = new Scanner(System.in);
+    public static Scanner scan = new Scanner(System.in); 
     public static Config config = new Config();
     public static String sqlAdd,sqlDel,sqlUpd,sqlView, sqlFetch;
     public static int choice;
